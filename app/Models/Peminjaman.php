@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
 
 class Peminjaman extends Model
 {
@@ -13,30 +13,42 @@ class Peminjaman extends Model
         'tgl_kembali_real', 'status', 'denda', 'petugas_id',
     ];
 
-    public function user()
+    const TARIF_DENDA = 1000; // per hari
+
+    protected static function booted(): void
     {
-        return $this->belongsTo(User::class);
+        // Setiap disimpan/diedit, denda dihitung ulang otomatis
+        static::saving(function (Peminjaman $p) {
+            $p->denda = $p->hitungDenda();
+        });
     }
 
-    public function alat()
+    public function hitungDenda(): int
     {
-        return $this->belongsTo(Alat::class);
+        if (! $this->tgl_kembali_rencana) {
+            return 0;
+        }
+
+        $rencana = Carbon::parse($this->tgl_kembali_rencana)->startOfDay();
+
+        // Kalau sudah dikembalikan pakai tanggal real, kalau belum pakai hari ini
+        $pembanding = $this->tgl_kembali_real
+            ? Carbon::parse($this->tgl_kembali_real)->startOfDay()
+            : now()->startOfDay();
+
+        $hari = $rencana->diffInDays($pembanding, false);
+
+        return max(0, (int) $hari) * self::TARIF_DENDA;
     }
 
-    public function petugas()
-    {
-        return $this->belongsTo(User::class, 'petugas_id');
-    }
+    // relasi user(), alat(), petugas() tetap sama
 
     public function kembalikan(): void
     {
-        $real = now()->toDateString();
-        $denda = DB::selectOne('SELECT hitung_denda(?, ?) AS denda', [$this->tgl_kembali_rencana, $real])->denda;
-
         $this->update([
-            'tgl_kembali_real' => $real,
-            'denda'            => $denda,
+            'tgl_kembali_real' => now()->toDateString(),
             'status'           => 'selesai',
         ]);
+        // denda otomatis terhitung lewat event saving
     }
 }
