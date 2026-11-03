@@ -15,7 +15,16 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    $q = \App\Models\Peminjaman::query();
+    if (auth()->user()->role === 'peminjam') {
+        $q->where('user_id', auth()->id());
+    }
+
+    return view('dashboard', [
+        'menunggu' => (clone $q)->where('status', 'menunggu')->count(),
+        'dipinjam' => (clone $q)->where('status', 'disetujui')->count(),
+        'selesai'  => (clone $q)->where('status', 'selesai')->count(),
+    ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
