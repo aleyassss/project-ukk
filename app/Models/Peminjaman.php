@@ -41,6 +41,20 @@ class Peminjaman extends Model
         return max(0, (int) $hari) * self::TARIF_DENDA;
     }
 
+    public function user()
+{
+    return $this->belongsTo(User::class);
+}
+
+public function alat()
+{
+    return $this->belongsTo(Alat::class);
+}
+
+public function petugas()
+{
+    return $this->belongsTo(User::class, 'petugas_id');
+}
     // relasi user(), alat(), petugas() tetap sama
 
     public function kembalikan(): void
