@@ -20,7 +20,8 @@
     <x-nav-link :href="route('admin.alat.index')" :active="request()->routeIs('admin.alat.*')">Alat</x-nav-link>
     <x-nav-link :href="route('admin.user.index')" :active="request()->routeIs('admin.user.*')">User</x-nav-link>
     <x-nav-link :href="route('admin.log.index')" :active="request()->routeIs('admin.log.*')">Log Aktivitas</x-nav-link>
-@endif<x-nav-link :href="route('admin.peminjaman.index')" :active="request()->routeIs('admin.peminjaman.*')">Peminjaman</x-nav-link>
+    <x-nav-link :href="route('admin.peminjaman.index')" :active="request()->routeIs('admin.peminjaman.*')">Peminjaman</x-nav-link>
+    @endif
 @if (auth()->user()->role === 'peminjam')
     <x-nav-link :href="route('peminjam.alat')" :active="request()->routeIs('peminjam.alat')">Daftar Alat</x-nav-link>
     <x-nav-link :href="route('peminjam.riwayat')" :active="request()->routeIs('peminjam.riwayat')">Riwayat</x-nav-link>
